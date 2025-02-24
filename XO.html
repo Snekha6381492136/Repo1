@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XO Game (Max 3 Moves)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            font-size: 2em;
+            text-align: center;
+            line-height: 100px;
+            border: 2px solid rgb(10, 10, 10);
+            cursor: pointer;
+        }
+        .status {
+            margin-top: 20px;
+            font-size: 1.5em;
+        }
+        .reset {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>XO Game </h1>
+    <div class="status">Player X's Turn</div>
+    <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+
+    <button class="reset" onclick="resetGame()">Reset Game</button>
+
+    <script>
+        let board = ["", "", "", "", "", "", "", "", ""];
+        let currentPlayer = "X";
+        let gameActive = true;
+        let moves = { "X": [], "O": [] };
+
+        const cells = document.querySelectorAll(".cell");
+        const statusText = document.querySelector(".status");
+
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+            [0, 4, 8], [2, 4, 6]             
+        ];
+
+        function checkWinner() {
+            for (let condition of winningConditions) {
+                let [a, b, c] = condition;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    gameActive = false;
+                    statusText.textContent = `Player ${board[a]} Wins!`;
+                    return;
+                }
+            }
+            if (!board.includes("") && gameActive) {
+                gameActive = false;
+                statusText.textContent = "It's a Draw!";
+            }
+        }
+
+        function handleClick(event) {
+            if (!gameActive) return;
+
+            let index = event.target.dataset.index;
+            if (board[index] === "") {
+                board[index] = currentPlayer;
+                moves[currentPlayer].push(index);
+                event.target.textContent = currentPlayer;
+                if (moves[currentPlayer].length > 3) {
+                    let removedIndex = moves[currentPlayer].shift();
+                    board[removedIndex] = "";
+                    document.querySelector(`.cell[data-index='${removedIndex}']`).textContent = "";
+                }
+
+                checkWinner();
+                currentPlayer = currentPlayer === "X" ? "O" : "X";
+                if (gameActive) {
+                    statusText.textContent = `Player ${currentPlayer}'s Turn`;
+                }
+            }
+        }
+
+        function resetGame() {
+            board.fill("");
+            moves = { "X": [], "O": [] };
+            cells.forEach(cell => {
+                cell.textContent = "";
+            });
+            gameActive = true;
+            currentPlayer = "X";
+            statusText.textContent = "Player X's Turn";
+        }
+
+        cells.forEach(cell => cell.addEventListener("click", handleClick));
+    </script>
+
+</body>
+</html>
